@@ -1,0 +1,4 @@
+/venv
+.env
+/vector_store
+/resources
