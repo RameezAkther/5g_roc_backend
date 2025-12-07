@@ -168,6 +168,9 @@ async def update_memory(
 # Send message (core RAG + Analyst logic)
 # --------------------------
 
+docs = []  # ensures this exists for both modes
+
+
 @router.post("/sessions/{session_id}/messages")
 async def send_message(
     session_id: str,
@@ -240,13 +243,18 @@ async def send_message(
             extra_context = f"(Warning: document retrieval failed: {str(e)})"
     else:  # "analyst"
         try:
-            network_summary = build_network_summary()
-            extra_context = f"Current network summary:\n{network_summary}"
+            network_summary = build_network_summary(payload.message)
+            extra_context = f"Current network analytics based on latest data:\n{network_summary}"
+
         except Exception as e:
             extra_context = f"(Warning: network summary failed: {str(e)})"
 
+
     system_prompt = build_system_prompt(mode)
     system_msg = SystemMessage(system_prompt)
+    print("SYSTEM PROMPT:", system_prompt)
+    print("EXTRA CONTEXT:", extra_context)
+    print("HISTORY:", history_text)
 
     # 3️⃣ Call Gemini via LangChain
     final_prompt = [
